@@ -36,6 +36,7 @@ const fileList = async (path = '') => {
 
 const enterDirectory = (path) => {
   currentPath.value = path
+  console.log("enterDirectory:path", currentPath.value)
   fileList(path)
 }
 
@@ -54,6 +55,7 @@ const goUpOneLevel = () => {
     segments.pop()
   }
   currentPath.value = segments.join("/")
+  console.log(currentPath.value)
   fileList(currentPath.value)
 }
 
@@ -70,13 +72,16 @@ const goUpOneLevel = () => {
 const fileDelete = async (path) => {
   try {
     // 发送 POST 请求到后端
+    console.log("fileDeletePre:", currentPath.value, path)
     form.value.relativepath = path
     const response = await requestUtil.post("home/file-management/files/delete", form.value);
     console.log(response.data)
-    fileList(currentPath)
+    console.log("fileListPre:", currentPath.value)
+    fileList(currentPath.value)
   } catch (error) {
     console.error('刷新失败:', error);
     // 处理错误，例如显示错误消息给用户
+    console.log(currentPath.value)
   }
 };
 
@@ -105,7 +110,12 @@ const fileDownload = async (row) => {
 
 const handleUpload = () => {
   showUpload.value = true
-  form.value.relativepath = currentPath
+  form.value.relativepath = currentPath.value
+}
+
+// 文件上传成功回调
+const handleSuccess = () => {
+  fileList(currentPath.value)
 }
 
 onMounted(() => {
@@ -153,7 +163,7 @@ onMounted(() => {
             <!-- 文件夹操作 -->
             <template v-if="scope.row.type === 'directory'">
               <el-tooltip content="进入" placement="top">
-                <el-button type="link" @click.stop="enterDirectory(scope.row.path)">
+                <el-button type="primary" @click.stop="enterDirectory(scope.row.path)">
                   <el-icon>
                     <Right />
                   </el-icon>
@@ -164,7 +174,7 @@ onMounted(() => {
             <!-- 文件操作 -->
             <template v-else>
               <el-tooltip content="下载" placement="top">
-                <el-button type="link" @click.stop="fileDownload(scope.row)">
+                <el-button type="primary" @click.stop="fileDownload(scope.row)">
                   <el-icon>
                     <Download />
                   </el-icon>
@@ -174,7 +184,7 @@ onMounted(() => {
 
             <!-- 通用操作 -->
             <el-tooltip content="删除" placement="top">
-              <el-button type="link" @click.stop="fileDelete(scope.row.path)">
+              <el-button type="primary" @click.stop="fileDelete(scope.row.path)">
                 <el-icon>
                   <Delete />
                 </el-icon>
@@ -190,7 +200,7 @@ onMounted(() => {
   </el-table>
 
   <el-dialog v-model="showUpload" >
-    <el-upload class="upload-demo" drag action="http://localhost:8000/home/file-management/files/upload" :data="form" multiple >
+    <el-upload class="upload-demo" drag action="http://localhost:8000/home/file-management/files/upload" :data="form" :on-success="handleSuccess" multiple >
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
       <div class="el-upload__text">
         Drop file here or <em>click to upload</em>

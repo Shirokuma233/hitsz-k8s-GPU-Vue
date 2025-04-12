@@ -8,8 +8,6 @@ import requestUtil from '@/utils/request';
 const task_select = ref("1")
 const currentPageNum = ref(1)
 const pageSize = ref(9)
-
-
 const runningTask = ref([])
 const finishedTask = ref([])
 

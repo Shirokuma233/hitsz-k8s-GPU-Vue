@@ -28,6 +28,10 @@ const handleMenuCommand = (command) => {
   }
 }
 
+const deleteFinished = (pod_name) => {
+  console.log("delete ", pod_name)
+}
+
 </script>
 
 <template>
@@ -38,7 +42,7 @@ const handleMenuCommand = (command) => {
       <el-table-column prop="name" label="实验名称" class="labName" width="150" />
       <el-table-column prop="status" label="状态" class="labStatus" width="110" />
       <el-table-column prop="startTime" label="创建时间" class="labCreateTime" width="180" />
-      <el-table-column prop="calculateResource" label="计算资源" class="labGpu" width="190">
+      <el-table-column  label="计算资源" class="labGpu" width="190">
         <template #default="scope">
           <el-tooltip placement="top" content="申请的资源类型,与后续申请相关" effect="light">
             <el-button link type="primary">
@@ -50,14 +54,14 @@ const handleMenuCommand = (command) => {
       <el-table-column prop="totalDuration" label="持续时间(h)" class="labTotalTime" width="100" />
       <el-table-column prop="runtimeDuration" label="已运行时长(h)" class="labRunningTime" width="100" />
       <el-table-column prop="images" label="环境" class="labEnvironment" width="80" />
-      <el-table-column label="操作" width="180">
+      <el-table-column label="操作" >
         <template #default="{ row }">
           <div class="operation-container">
             <template v-for="op in row.operation" :key="op.action">
 
-
               <!-- SSH Tooltip 按钮 -->
-              <el-tooltip v-if="op.action === 'ssh'" placement="top" effect="light" :raw-content="true">
+              <el-tooltip v-if="op.action === 'ssh' && row.status !== '已完成'" placement="top" effect="light"
+                :raw-content="true">
                 <template #content>
                   <div class="ssh-tooltip">
                     <div @click="copyText(op.tooltip.command)">
@@ -74,7 +78,8 @@ const handleMenuCommand = (command) => {
               </el-tooltip>
 
               <!-- 更多操作下拉菜单 -->
-              <el-dropdown v-else-if="op.action === 'menu'" trigger="click" @command="handleMenuCommand">
+              <el-dropdown v-else-if="op.action === 'menu' && row.status !== '已完成'" trigger="click"
+                @command="handleMenuCommand">
                 <el-button link type="primary" size="small">
                   {{ op.label }}<el-icon><arrow-down /></el-icon>
                 </el-button>
@@ -87,6 +92,11 @@ const handleMenuCommand = (command) => {
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
+
+              <!-- 实验删除按钮 -->
+              <el-button type="danger" v-else-if="op.action === 'deleteFinished' && row.status === '已完成'" @click="deleteFinished">
+                删除
+              </el-button>
             </template>
           </div>
         </template>

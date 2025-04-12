@@ -36,11 +36,6 @@ const routes = [
         path: "file-share",
         component: () => import("@/views/file-share/FileShareView.vue"),
       },
-      {
-        //平台数据集
-        path: "sharing-data",
-        component: () => import("@/views/sharing-data/SharingDataView.vue"),
-      }
     ]
   }
 ]

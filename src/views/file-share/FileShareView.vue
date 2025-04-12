@@ -1,110 +1,92 @@
 <script setup>
-import { Back, Folder } from '@element-plus/icons-vue';
-import { reactive } from 'vue';
+import { Back} from '@element-plus/icons-vue';
+import { onMounted, ref } from 'vue';
+import requestUtil from '@/utils/request';
 
-const data = reactive([
-  { fileName: "linux1", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux2", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux3", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux4", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux5", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux6", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux7", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux1", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux2", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux3", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux4", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux5", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux6", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-  { fileName: "linux7", changeTime: "2024/5/8 10:35:23", fileSize: "" },
-])
+const filedata = ref([])
+const currentPath = ref('')
+const form = ref({
+  username: '',
+  relativepath: '',
+})
 
-const showButtons = (row) => {
-  row.show = true
+
+
+const fileList = async (path = '') => {
+  try {
+    // 发送 GET 请求到后端
+    form.value.relativepath = path
+    const response = await requestUtil.get("home/file-share", form.value);
+    filedata.value = response.data.files
+    console.log(response.data)
+  } catch (error) {
+    console.error('刷新失败:', error);
+    // 处理错误，例如显示错误消息给用户
+  }
+};
+
+const enterDirectory = (path) => {
+  currentPath.value = path
+  console.log("enterDirectory:path", currentPath.value)
+  fileList(path)
 }
 
-const hideButtons = (row) => {
-  row.show = false
+// 点击行事件（区分文件和文件夹）
+const handleRowClick = (row) => {
+  if (row.type === 'directory') {
+    enterDirectory(row.path)
+  }
 }
+
+const goUpOneLevel = () => {
+  // 分割路径并移除空段（处理连续斜杠情况）
+  const segments = currentPath.value.split('/')
+  // 移除最后一段（如果存在）
+  if (segments.length > 0) {
+    segments.pop()
+  }
+  currentPath.value = segments.join("/")
+  console.log(currentPath.value)
+  fileList(currentPath.value)
+}
+
+onMounted(() => {
+  form.value.username = sessionStorage.getItem('username')
+  fileList()
+});
 </script>
 
 <template>
   <el-row>
     <el-col :span="12" class="file-title">
-      <el-button link>
+      <el-button v-if="currentPath" @click="goUpOneLevel">
         <el-icon>
           <Back />
         </el-icon>
         上级目录
       </el-button>
       <span class="line"> | </span>
-      share
+      <span> share/{{ currentPath }} </span>
     </el-col>
-
-    <!--     <el-col :span="12" class="file-buttons">
-      <el-button type="danger" plain :disabled="true">
-        <el-icon>
-          <Delete />
-        </el-icon>
-        删除
-      </el-button>
-      <el-button>
-        <el-icon>
-          <FolderAdd />
-        </el-icon>
-        新建文件夹
-      </el-button>
-      <el-button type="primary">
-        <el-icon>
-          <Upload />
-        </el-icon>
-        上传
-      </el-button>
-    </el-col> -->
-
   </el-row>
 
-  <el-table :data="data" height="500px" stripe :row-style="{ height: '50px' }" @cell-mouse-enter="showButtons" @cell-mouse-leave="hideButtons">
+  <el-table :data="filedata" height="500px" stripe :row-style="{ height: '50px' }" @row-click="handleRowClick">
     <el-table-column type="selection" width="55" />
-    <el-table-column prop="fileName" label="文件名" width="600">
+    <el-table-column prop="name" label="文件名" width="600">
       <template #default="scope">
-        <div class="row-file" >
+        <div class="row-file">
+          <!-- 动态显示文件/文件夹图标 -->
           <el-icon>
-            <Folder />
+            <component :is="scope.row.type === 'directory' ? 'Folder' : 'Document'" />
           </el-icon>
-          <span>{{ scope.row.fileName }}</span>
-          <div class="row-buttons" v-if="scope.row.show">
-
-            <!-- <el-tooltip content="重命名" placement="top">
-              <el-button type="text" @click="renameFile(scope.row)">
-                <el-icon>
-                  <Edit />
-                </el-icon>
-              </el-button>
-            </el-tooltip>
-            <el-tooltip content="删除" placement="top">
-              <el-button type="text" @click="deleteFile(scope.row)">
-                <el-icon>
-                  <Delete />
-                </el-icon>
-              </el-button>
-            </el-tooltip> -->
-
-            <el-tooltip content="下载" placement="top">
-              <el-button type="text" @click="downloadFile(scope.row)">
-                <el-icon>
-                  <Download />
-                </el-icon>
-              </el-button>
-            </el-tooltip>
-          </div>
+          <span>{{ scope.row.name }}</span>
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="changeTime" label="修改时间" />
-    <el-table-column prop="fileSize" label="大小" />
+    <el-table-column prop="type" label="类型" />
+    <el-table-column prop="modified" label="修改时间" />
+    <el-table-column prop="size" label="大小" />
   </el-table>
-
 
 </template>
 
@@ -132,9 +114,4 @@ const hideButtons = (row) => {
   align-items: center;
 }
 
-.row-buttons {
-  display: flex;
-  justify-content: end;
-  width: 100%;
-}
 </style>
