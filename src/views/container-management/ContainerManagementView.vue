@@ -23,6 +23,7 @@ watch(task_select, (newValue) => {
 
 // 控制表单对话框的显示状态
 const showForm = ref(false)
+const showDistribute = ref(false)
 
 // 表单数据对象
 const form = ref({
@@ -33,6 +34,16 @@ const form = ref({
   gpuResource: '',
   gpuCount: null,
   runtime: 1
+})
+
+const distribute = ref({
+  username: '',
+  pod_name: '',
+  imageEnvironment: '',
+  param: "",
+  workerReplicas: 1,
+  slotPerWorker: 1,
+  gpuResource: '',
 })
 
 // 刷新函数
@@ -68,8 +79,27 @@ const submitForm = async () => {
   }
 }
 
+// 提交分布式部署的处理函数
+const submitDistribute = async () => {
+  try {
+    // 发送 POST 请求到后端
+    const response = await requestUtil.post("home/container-management/distribute", distribute.value);
+    console.log('成功创建分布式任务实验":', response.data);
+    // 关闭对话框
+    showDistribute.value = false;
+
+    // 调用refresh函数来更新数据
+    await refresh();
+  } catch (error) {
+    console.error('提交失败:', error);
+    // 处理错误，例如显示错误消息
+  }
+}
+
+
 onMounted(() => {
   form.value.username = sessionStorage.getItem('username')
+  distribute.value.username = sessionStorage.getItem('username')
   console.log(form.value)
   refresh()
 })
@@ -90,6 +120,9 @@ onMounted(() => {
       </el-button>
       <el-button type="primary" @click="showForm = true">
         创建实验
+      </el-button>
+      <el-button type="primary" @click="showDistribute= true">
+        分布式部署实验
       </el-button>
     </el-col>
   </el-row>
@@ -150,6 +183,48 @@ onMounted(() => {
       <span class="dialog-footer">
         <el-button @click="showForm = false">取消</el-button>
         <el-button type="primary" @click="submitForm">提交</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <!-- 分布式部署 -->
+  <el-dialog v-model="showDistribute" title="分布式部署" width="50%">
+    <el-form :model="distribute" label-width="120px">
+      <el-form-item label="名称">
+        <el-input v-model="distribute.pod_name"></el-input>
+      </el-form-item>
+      <el-form-item label="镜像环境">
+        <el-select v-model="distribute.imageEnvironment" placeholder="请选择镜像环境">
+          <el-option label="Ubuntu 20.04" value="mpioperator/tensorflow-benchmarks:latest"></el-option>
+          <el-option label="Ubuntu 20.04" value="ubuntu:20.04"></el-option>
+          <el-option label="CentOS 7" value="centos:7"></el-option>
+          <el-option label="测试用镜像1(alpine)" value="alpine:3.12"></el-option>
+          <el-option label="测试用镜像2(hello world)" value="hello-world"></el-option>
+          <el-option label="测试用镜像3(mpi_test world)" value="mpi_test"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="启动参数">
+        <el-input v-model="distribute.param"></el-input>
+      </el-form-item>
+      <el-form-item label="节点数">
+        <el-input v-model="distribute.workerReplicas"></el-input>
+      </el-form-item>
+      <el-form-item label="每节点进程数">
+        <el-input v-model="distribute.slotPerWorker"></el-input>
+      </el-form-item>
+      <el-form-item label="GPU资源">
+        <el-select v-model="distribute.gpuResource" placeholder="请选择GPU资源">
+          <el-option label="NVIDIA A100" value="nvidia-a100"></el-option>
+          <el-option label="NVIDIA V100" value="nvidia-v100"></el-option>
+          <el-option label="NVIDIA T4" value="nvidia-t4"></el-option>
+        </el-select>
+      </el-form-item>
+      
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="showDistribute = false">取消</el-button>
+        <el-button type="primary" @click="submitDistribute">提交</el-button>
       </span>
     </template>
   </el-dialog>
