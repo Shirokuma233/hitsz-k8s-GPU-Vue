@@ -25,9 +25,6 @@
          共享空间
       </el-menu-item>
 
-      <el-menu-item index="/sharing-data">
-         平台数据集
-      </el-menu-item>
 
     </el-menu>
   </div>

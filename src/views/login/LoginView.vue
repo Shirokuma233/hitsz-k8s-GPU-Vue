@@ -46,7 +46,6 @@ const handleLogin = async () => {
     console.log('用户名已存入 sessionStorage');
 
     // 检查是否存在PV，没有则要申请
-    // 检查是否存在filebrowser，没有也要申请
     const response_resource = await requestUtil.post("login/resource", data);
     console.log(response_resource.data);
     //网页跳转

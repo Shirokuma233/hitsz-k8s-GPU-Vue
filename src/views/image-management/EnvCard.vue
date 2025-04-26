@@ -14,8 +14,8 @@ const props = defineProps({
   <el-card >
     <div class="image-info">
         <div class="image-header">
-          <img
-            :src= "props.imageIcon" alt="镜像图标" class="image-icon">
+          <!-- <img
+            :src= "props.imageIcon" alt="镜像图标" class="image-icon"> -->
           <p class="image-title">{{imageTitle}}</p>
         </div>
         <p class="image-tag">{{ props.imageTag }}</p>
@@ -24,7 +24,7 @@ const props = defineProps({
         <p class="image-note">{{props.imageNote}}</p>
         <p class="image-size">{{ props.imageSize }}</p>
       </div>
-    <template #footer>
+    <!-- <template #footer>
       <el-dropdown trigger="click">
         <span class="el-dropdown-more">
           更多
@@ -44,7 +44,7 @@ const props = defineProps({
         删除
       </el-button>
 
-    </template>
+    </template> -->
   </el-card>
 
 </template>

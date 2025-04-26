@@ -32,7 +32,7 @@ const form = ref({
   password: '',
   imageEnvironment: '',
   gpuResource: '',
-  gpuCount: null,
+  gpuCount: 1,
   runtime: 1
 })
 
@@ -46,14 +46,28 @@ const distribute = ref({
   gpuResource: '',
 })
 
-// 刷新函数
+const total_envs = ref([
+  {
+    title: "",
+    tag: "",
+    date: "",
+    note: "",
+    size: "",
+  },
+])
+
+// 刷新函数,获取pod以及镜像信息
 const refresh = async () => {
   try {
-    // 发送 GET 请求到后端
+    // 请求pod信息
     const response = await requestUtil.get("home/container-management/create", form.value);
     const pods_info = response.data;
     runningTask.value = pods_info.runningTask
     finishedTask.value = pods_info.finishedTask
+    //请求镜像信息
+    const response2 = await requestUtil.get("home/image-management");
+    const images_info = response2.data;
+    total_envs.value = images_info.totalEnvs
 
     console.log('成功:', pods_info);
   } catch (error) {
@@ -121,7 +135,7 @@ onMounted(() => {
       <el-button type="primary" @click="showForm = true">
         创建实验
       </el-button>
-      <el-button type="primary" @click="showDistribute= true">
+      <el-button type="primary" @click="showDistribute = true">
         分布式部署实验
       </el-button>
     </el-col>
@@ -157,16 +171,13 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="镜像环境">
         <el-select v-model="form.imageEnvironment" placeholder="请选择镜像环境">
-          <el-option label="Ubuntu 20.04" value="ubuntu:20.04"></el-option>
-          <el-option label="CentOS 7" value="centos:7"></el-option>
-          <el-option label="测试用镜像1(alpine)" value="alpine:3.12"></el-option>
-          <el-option label="测试用镜像2(hello world)" value="hello-world"></el-option>
+          <el-option label="(测试用镜像)Ubuntu 20.04" value="ubuntu:20.04"></el-option>
+          <el-option v-for="(env, index) in total_envs" :key="index" :label="`${env.title}: ${env.tag}`"
+            :value="`${env.title}: ${env.tag}`"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="GPU资源">
         <el-select v-model="form.gpuResource" placeholder="请选择GPU资源">
-          <el-option label="NVIDIA A100" value="nvidia-a100"></el-option>
-          <el-option label="NVIDIA V100" value="nvidia-v100"></el-option>
           <el-option label="NVIDIA T4" value="nvidia-t4"></el-option>
         </el-select>
       </el-form-item>
@@ -195,12 +206,9 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="镜像环境">
         <el-select v-model="distribute.imageEnvironment" placeholder="请选择镜像环境">
-          <el-option label="Ubuntu 20.04" value="mpioperator/tensorflow-benchmarks:latest"></el-option>
-          <el-option label="Ubuntu 20.04" value="ubuntu:20.04"></el-option>
-          <el-option label="CentOS 7" value="centos:7"></el-option>
-          <el-option label="测试用镜像1(alpine)" value="alpine:3.12"></el-option>
-          <el-option label="测试用镜像2(hello world)" value="hello-world"></el-option>
-          <el-option label="测试用镜像3(mpi_test world)" value="mpi_test"></el-option>
+          <el-option label="(测试用镜像)Ubuntu 20.04" value="ubuntu:20.04"></el-option>
+          <el-option v-for="(env, index) in total_envs" :key="index" :label="`${env.title}: ${env.tag}`"
+            :value="`${env.title}: ${env.tag}`"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="启动参数">
@@ -214,12 +222,10 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="GPU资源">
         <el-select v-model="distribute.gpuResource" placeholder="请选择GPU资源">
-          <el-option label="NVIDIA A100" value="nvidia-a100"></el-option>
-          <el-option label="NVIDIA V100" value="nvidia-v100"></el-option>
           <el-option label="NVIDIA T4" value="nvidia-t4"></el-option>
         </el-select>
       </el-form-item>
-      
+
     </el-form>
     <template #footer>
       <span class="dialog-footer">

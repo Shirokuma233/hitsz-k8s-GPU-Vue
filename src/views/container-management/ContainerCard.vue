@@ -1,5 +1,6 @@
 <script setup>
 import { ElMessage } from 'element-plus'
+import requestUtil from '@/utils/request';
 
 const props = defineProps({
   pageNum: Number,
@@ -15,18 +16,54 @@ const copyText = (text) => {
 
 // 处理菜单点击
 const handleMenuCommand = (command) => {
-  switch (command) {
+  const { action, row } = command;
+  switch (action) {
     case 'save':
       console.log('保存容器')
+      saveImage(row.name)
       break
     case 'restart':
       console.log('重启容器')
       break
     case 'delete':
       console.log('删除操作')
+      deleteContainer(row.name)
       break
   }
 }
+
+
+
+// 保存镜像方法
+const saveImage = async (podName) => {
+  try {
+    const response = await requestUtil.post('home/container-management/save', {"podName": podName, "namespace": "container-management"});
+    console.log('保存成功:', response.data.image);
+  } catch (error) {
+    console.error('保存失败:', error.response.data);
+  }
+};
+
+// 删除实验方法
+const deleteContainer = async (podName) => {
+  try {
+    const response = await requestUtil.post('home/container-management/delete', {"podName": podName, "namespace": "container-management"});
+    console.log('保存成功:', response.data.message);
+  } catch (error) {
+    console.error('保存失败:', error.response.data);
+  }
+};
+
+// // 重启实验方法
+// const restartContainer = async (podName) => {
+//   try {
+//     const response = await requestUtil.post('home/container-management/restart', {"podName": podName, "namespace": "container-management"});
+//     console.log('保存成功:', response.data.message);
+//   } catch (error) {
+//     console.error('保存失败:', error.response.data);
+//   }
+// };
+
 
 const deleteFinished = (pod_name) => {
   console.log("delete ", pod_name)
@@ -85,7 +122,7 @@ const deleteFinished = (pod_name) => {
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item v-for="item in op.menuItems" :key="item.action" :command="item.action"
+                    <el-dropdown-item v-for="item in op.menuItems" :key="item.action" :command="{  action: item.action, row: row }"
                       :divided="item.divided">
                       {{ item.label }}
                     </el-dropdown-item>
