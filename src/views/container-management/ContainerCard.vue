@@ -32,16 +32,31 @@ const handleMenuCommand = (command) => {
   }
 }
 
-
-
 // 保存镜像方法
-const saveImage = async (podName) => {
-  try {
-    const response = await requestUtil.post('home/container-management/save', {"podName": podName, "namespace": "container-management"});
-    console.log('保存成功:', response.data.image);
-  } catch (error) {
-    console.error('保存失败:', error.response.data);
-  }
+const saveImage = (podName) => {
+  // 立即弹出提示，告诉用户任务已提交
+  ElMessage({
+    message: '镜像保存请求已提交，请耐心等待后台处理完成。',
+    type: 'success',
+    duration: 5000,
+  });
+
+  // 发起请求，不等待结果
+  requestUtil.post('home/container-management/save', 
+  {
+    podName: podName,
+    namespace: "container-management",
+  },
+  {
+    timeout: 100000,
+  })
+  .then(response => {
+    console.log('镜像保存成功', response.data.image);
+    // 可选：保存成功后再提示一次
+  })
+  .catch(error => {
+    console.error('保存失败:', error.response?.data || error.message);
+  });
 };
 
 // 删除实验方法

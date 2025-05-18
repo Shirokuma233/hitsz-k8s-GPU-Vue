@@ -171,9 +171,10 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="镜像环境">
         <el-select v-model="form.imageEnvironment" placeholder="请选择镜像环境">
-          <el-option label="(测试用镜像)Ubuntu 20.04" value="ubuntu:20.04"></el-option>
-          <el-option v-for="(env, index) in total_envs" :key="index" :label="`${env.title}: ${env.tag}`"
-            :value="`${env.title}: ${env.tag}`"></el-option>
+          <el-option label="(测试用镜像)Ubuntu 22.04" value="ubuntu:22.04"></el-option>
+          <el-option label="(测试用镜像)pytorch:2.5.1-cuda12.1-cudnn9-runtime" value="pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime"></el-option>
+          <el-option v-for="(env, index) in total_envs" :key="index" :label="`${env.title}:${env.tag}`"
+            :value="`172.25.95.4:5000/${env.title}:${env.tag}`"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="GPU资源">
@@ -206,9 +207,10 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="镜像环境">
         <el-select v-model="distribute.imageEnvironment" placeholder="请选择镜像环境">
-          <el-option label="(测试用镜像)Ubuntu 20.04" value="ubuntu:20.04"></el-option>
-          <el-option v-for="(env, index) in total_envs" :key="index" :label="`${env.title}: ${env.tag}`"
-            :value="`${env.title}: ${env.tag}`"></el-option>
+          <el-option label="(测试用镜像)cpu_mpi" value="cpu_mpi"></el-option>
+          <el-option label="(测试用镜像)pytorch2.5.1-mpi" value="pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime-mpi"></el-option>
+          <el-option v-for="(env, index) in total_envs" :key="index" :label="`${env.title}:${env.tag}`"
+            :value="`172.25.95.4:5000/${env.title}:${env.tag}`"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="启动参数">
